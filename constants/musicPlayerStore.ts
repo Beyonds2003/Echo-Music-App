@@ -8,6 +8,7 @@ interface MusicPlayerState {
   url: string;
   image: string;
   isPlayed: boolean;
+  bgColor: string[];
   set: (data: Partial<MusicPlayerState>) => void;
   reset: () => void;
 }
@@ -20,6 +21,7 @@ const initialState = {
   url: "",
   image: "",
   isPlayed: false,
+  bgColor: [],
 };
 
 export const useMusicPlayerStore = create<MusicPlayerState>((set) => ({

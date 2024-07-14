@@ -1,9 +1,12 @@
 import { Audio } from "expo-av";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import TrackPlayer from "react-native-track-player";
 
 export let sound = new Audio.Sound();
 let isSoundLoaded = false;
 let musicId = "";
+
+let isPlay = false;
 
 type musicType = {
   id: string;
@@ -15,6 +18,12 @@ type musicType = {
   isPlayed: boolean;
 };
 
+Audio.setAudioModeAsync({
+  playsInSilentModeIOS: true,
+  staysActiveInBackground: true,
+  shouldDuckAndroid: true,
+});
+
 export const handleMusicPlay = async (
   id: string,
   image: string,
@@ -24,7 +33,6 @@ export const handleMusicPlay = async (
   duration: number,
   setMusicStore: (data: musicType) => void,
 ) => {
-  console.log("play");
   try {
     const status = await sound.getStatusAsync();
     if (status.isLoaded) {

@@ -14,9 +14,7 @@ const App = () => {
     <SafeAreaView className="p-4 flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
       <SearchInput />
-      <View>
-        <RecentlyPlayed />
-      </View>
+      <RecentlyPlayed />
       <View className="mt-4 flex-1">
         <SearchSong />
       </View>

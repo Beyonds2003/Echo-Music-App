@@ -1,19 +1,19 @@
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator, FlatList } from "react-native";
 import React, { useState } from "react";
 import SmallMusicCard from "./SmallMusicCard";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { MUSIC_URL, SongSearchResponse } from "@/constants";
 import { useMusicSearchStore } from "@/constants/musicSearchStore";
-import { FlashList } from "@shopify/flash-list";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SearchSong = () => {
   const musicSearchStore = useMusicSearchStore((state) => state);
   const [page, setPage] = useState(1);
 
   const fetchSongs = async ({ pageParam = page }: { pageParam: number }) => {
-    console.log("Fetch page: ", pageParam);
+    const defaultMusicSearch = await AsyncStorage.getItem("musicSearch");
     const response = await fetch(
-      `${MUSIC_URL}/search/songs?page=${pageParam}&limit=10&query=${musicSearchStore.name === "" ? "Suzume" : musicSearchStore.name}`,
+      `${MUSIC_URL}/search/songs?page=${pageParam}&limit=10&query=${musicSearchStore.name === "" ? defaultMusicSearch : musicSearchStore.name}`,
     );
     const data = await response.json();
     return data;
@@ -66,7 +66,7 @@ const SearchSong = () => {
   return (
     <View className="flex-1">
       <Text className="text-2xl font-semibold mb-3">Search</Text>
-      <FlashList
+      <FlatList
         className="flex-1"
         showsVerticalScrollIndicator={false}
         data={search?.pages.flatMap((page: any) => page.data.results)}
@@ -77,17 +77,18 @@ const SearchSong = () => {
               id={song.id}
               image={song.image[2].url}
               title={song.name}
-              artist={song.artists.primary[0].name}
+              artist={song.artists.primary[0].name.replaceAll("&amp;", "&")}
               url={song.downloadUrl[2].url}
               duration={song.duration ?? 0}
             />
           );
         }}
+        keyboardDismissMode="on-drag"
         keyExtractor={(item, index) => `${item.id}-${index}`}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
-        estimatedItemSize={100}
+      // estimatedItemSize={100}
       />
     </View>
   );

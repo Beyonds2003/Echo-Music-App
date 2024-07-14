@@ -2,6 +2,7 @@ import { View, TextInput } from "react-native";
 import React, { useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
 import { useMusicSearchStore } from "@/constants/musicSearchStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SearchInput = () => {
   const musicSearchStore = useMusicSearchStore((state) => state);
@@ -15,7 +16,8 @@ const SearchInput = () => {
         selectionColor={"gray"}
         value={value}
         onChangeText={(text) => setValue(text)}
-        onSubmitEditing={() => {
+        onSubmitEditing={async () => {
+          await AsyncStorage.setItem("musicSearch", value);
           musicSearchStore.set(value);
           setValue("");
         }}

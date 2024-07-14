@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, Touchable } from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 import React, { useEffect, useState } from "react";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -6,8 +6,11 @@ import { useMusicPlayerStore } from "@/constants/musicPlayerStore";
 import { handleMusicPause, handleMusicPlay } from "@/lib/utils";
 import Slider from "@react-native-community/slider";
 import { sound } from "@/lib/utils";
-import { BlurView } from "expo-blur";
 import { router } from "expo-router";
+import ImageColors from "react-native-image-colors";
+import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
+
+const AnimatedSlider = Animated.createAnimatedComponent(Slider);
 
 const BottomMusicBar = () => {
   const [position, setPosition] = useState(0);
@@ -17,12 +20,13 @@ const BottomMusicBar = () => {
   const { id, title, artist, duration, url, image, isPlayed } =
     musicPlayerStore;
 
+  const sliderScale = useSharedValue(2.5);
+
   useEffect(() => {
     function updatePosition() {
       sound.setOnPlaybackStatusUpdate((status: any) => {
         // Update every 2 seconds
-        setPosition(status.positionMillis / 1000),
-          console.log(status.positionMillis / 1000, "Position");
+        setPosition(status.positionMillis / 1000);
       });
     }
     let interval = setTimeout(updatePosition, 1000);
@@ -33,16 +37,35 @@ const BottomMusicBar = () => {
     };
   }, [position, title]);
 
+  useEffect(() => {
+    const generateBgColor = async () => {
+      const result: any = await ImageColors.getColors(image, {
+        fallback: "#111827",
+        cache: false,
+        key: "unique_key",
+        quality: "highest",
+      });
+      console.log("BgColor: ", result);
+      musicPlayerStore.set({
+        bgColor: [
+          result.average,
+          result.darkMuted,
+          result.darkVibrant,
+          result.dominant,
+          result.lightMuted,
+          result.lightVibrant,
+        ],
+      });
+    };
+    generateBgColor();
+  }, [title]);
+
   return (
-    <BlurView
-      intensity={100}
-      tint="light"
-      className="absolute bg-gray-50 shadow-lg shadow-gray-500 bottom-2 left-0 right-0 mx-2 rounded-2xl p-3"
-    >
+    <View className="absolute bg-white rounded-xl overflow-hidden shadow-lg shadow-gray-500 bottom-2 left-0 right-0 mx-2  p-3">
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          router.push("/detail");
+          router.push({ pathname: "/detail", params: { position } });
         }}
         className="flex flex-row items-center justify-between"
       >
@@ -103,14 +126,21 @@ const BottomMusicBar = () => {
               </View>
             </View>
             <View className="w-full h-2 ml-[-10px]">
-              <Slider
+              <AnimatedSlider
                 className="w-full"
+                style={{
+                  transform: [{ scaleY: sliderScale }],
+                }}
+                onSlidingStart={() => {
+                  sliderScale.value = withTiming(4, { duration: 100 });
+                }}
                 maximumValue={duration}
                 value={position}
                 minimumTrackTintColor="black"
                 maximumTrackTintColor="gray"
-                thumbTintColor="#FFFFFF"
+                thumbTintColor="rgba(52, 52, 52, 0)"
                 onSlidingComplete={(value) => {
+                  sliderScale.value = withTiming(2.5, { duration: 100 });
                   setPosition(value);
                   sound.setPositionAsync(value * 1000);
                 }}
@@ -119,7 +149,7 @@ const BottomMusicBar = () => {
           </View>
         </View>
       </TouchableOpacity>
-    </BlurView>
+    </View>
   );
 };
 

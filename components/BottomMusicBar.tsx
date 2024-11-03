@@ -5,10 +5,10 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useMusicPlayerStore } from "@/constants/musicPlayerStore";
 import { handleMusicPause, handleMusicPlay } from "@/lib/utils";
 import Slider from "@react-native-community/slider";
-import { sound } from "@/lib/utils";
 import { router } from "expo-router";
 import ImageColors from "react-native-image-colors";
 import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
+import TrackPlayer, { useProgress } from "react-native-track-player";
 
 const AnimatedSlider = Animated.createAnimatedComponent(Slider);
 
@@ -16,26 +16,12 @@ const BottomMusicBar = () => {
   const [position, setPosition] = useState(0);
 
   const musicPlayerStore = useMusicPlayerStore((state) => state);
+  const progress = useProgress();
 
   const { id, title, artist, duration, url, image, isPlayed } =
     musicPlayerStore;
 
   const sliderScale = useSharedValue(2.5);
-
-  useEffect(() => {
-    function updatePosition() {
-      sound.setOnPlaybackStatusUpdate((status: any) => {
-        // Update every 2 seconds
-        setPosition(status.positionMillis / 1000);
-      });
-    }
-    let interval = setTimeout(updatePosition, 1000);
-    // Cleanup function to avoid memory leaks
-    return () => {
-      sound.setOnPlaybackStatusUpdate(null);
-      clearTimeout(interval);
-    };
-  }, [position, title]);
 
   useEffect(() => {
     const generateBgColor = async () => {
@@ -45,7 +31,6 @@ const BottomMusicBar = () => {
         key: "unique_key",
         quality: "highest",
       });
-      console.log("BgColor: ", result);
       musicPlayerStore.set({
         bgColor: [
           result.average,
@@ -128,21 +113,18 @@ const BottomMusicBar = () => {
             <View className="w-full h-2 ml-[-10px]">
               <AnimatedSlider
                 className="w-full"
-                style={{
-                  transform: [{ scaleY: sliderScale }],
-                }}
                 onSlidingStart={() => {
                   sliderScale.value = withTiming(4, { duration: 100 });
                 }}
                 maximumValue={duration}
-                value={position}
+                value={progress.position}
                 minimumTrackTintColor="black"
                 maximumTrackTintColor="gray"
-                thumbTintColor="rgba(52, 52, 52, 0)"
-                onSlidingComplete={(value) => {
+                thumbTintColor="rgba(52, 52, 52, 1)"
+                onSlidingComplete={async (value) => {
                   sliderScale.value = withTiming(2.5, { duration: 100 });
                   setPosition(value);
-                  sound.setPositionAsync(value * 1000);
+                  await TrackPlayer.seekTo(value);
                 }}
               />
             </View>

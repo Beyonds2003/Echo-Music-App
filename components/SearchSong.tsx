@@ -29,7 +29,6 @@ const SearchSong = () => {
     queryKey: ["search-song", musicSearchStore.name],
     queryFn: fetchSongs,
     getNextPageParam: (lastPage: SongSearchResponse) => {
-      console.log(lastPage.data.start, "Last Page: ", lastPage.data.total);
       return lastPage.data.start + 10 < lastPage.data.total
         ? page + 1
         : undefined;
@@ -38,11 +37,9 @@ const SearchSong = () => {
   });
 
   const handleLoadMore = () => {
-    console.log("Has Next Page: ", hasNextPage);
     if (hasNextPage) {
       setPage((prevPage) => prevPage + 1);
       fetchNextPage();
-      console.log("Load More");
     }
   };
 

@@ -15,7 +15,6 @@ const LyricBottomSheet = ({ title, artist }: Props) => {
   const { data: lyric, isLoading } = useQuery({
     queryKey: [title, artist],
     queryFn: async (): Promise<{ message: string }> => {
-      console.log("Fetching");
       const response = await fetch(
         `https://echo-lyrics-hono-server.addy23.workers.dev/${artist}/${title}`,
       );

@@ -1,12 +1,8 @@
-import { Audio } from "expo-av";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import TrackPlayer from "react-native-track-player";
 
-export let sound = new Audio.Sound();
-let isSoundLoaded = false;
-let musicId = "";
-
-let isPlay = false;
+let isSetUp: boolean = false;
+let musicId: string = "";
 
 type musicType = {
   id: string;
@@ -18,12 +14,6 @@ type musicType = {
   isPlayed: boolean;
 };
 
-Audio.setAudioModeAsync({
-  playsInSilentModeIOS: true,
-  staysActiveInBackground: true,
-  shouldDuckAndroid: true,
-});
-
 export const handleMusicPlay = async (
   id: string,
   image: string,
@@ -34,32 +24,24 @@ export const handleMusicPlay = async (
   setMusicStore: (data: musicType) => void,
 ) => {
   try {
-    const status = await sound.getStatusAsync();
-    if (status.isLoaded) {
-      if (musicId === id && !status.isPlaying) {
-        // Resume the current sound if it is paused and the same song
-        await sound.playAsync();
-      } else {
-        // Unload any previously loaded sound
-        sound.unloadAsync();
-        sound = new Audio.Sound();
-        await sound.loadAsync({ uri: url });
-        isSoundLoaded = true;
-        musicId = id;
-
-        // Play the new sound
-        await sound.playAsync();
-      }
-    } else {
-      // Create a new sound instance and load the new sound
-      sound = new Audio.Sound();
-      await sound.loadAsync({ uri: url });
-      isSoundLoaded = true;
-      musicId = id;
-
-      // Play the new sound
-      await sound.playAsync();
+    if (!isSetUp) {
+      await TrackPlayer.setupPlayer();
+      isSetUp = true;
     }
+    if (musicId !== id) {
+      await TrackPlayer.reset();
+    }
+    await TrackPlayer.add({
+      id,
+      url,
+      title,
+      artist,
+      artwork: image,
+      duration,
+    });
+    await TrackPlayer.play();
+
+    musicId = id;
 
     // Update Store
     setMusicStore({
@@ -97,21 +79,17 @@ export const handleMusicPause = async (
   setMusicStore: (data: musicType) => void,
 ) => {
   try {
-    if (isSoundLoaded) {
-      console.log("pause");
-      await sound.pauseAsync();
-      setMusicStore({
-        id,
-        title,
-        artist,
-        duration,
-        url,
-        image,
-        isPlayed: false,
-      });
-    } else {
-      console.log("Sound is not loaded, cannot pause.");
-    }
+    console.log("pause");
+    await TrackPlayer.pause();
+    setMusicStore({
+      id,
+      title,
+      artist,
+      duration,
+      url,
+      image,
+      isPlayed: false,
+    });
   } catch (error) {
     console.log(error);
   }

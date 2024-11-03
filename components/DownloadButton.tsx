@@ -48,7 +48,6 @@ const DownloadButton = ({ id, image, title, artist, url, duration }: Props) => {
       (progress: FileSystem.DownloadProgressData) => {
         const pro =
           progress.totalBytesWritten / progress.totalBytesExpectedToWrite;
-        console.log(pro * 100, "Progress: ");
         setDownloadProgress(pro * 100);
       },
     );
@@ -56,10 +55,8 @@ const DownloadButton = ({ id, image, title, artist, url, duration }: Props) => {
     try {
       const { uri }: any = await downloadResumable.downloadAsync();
 
-      console.log("URI: ", uri);
       // Save the file to the public Downloads folder
       const asset = await MediaLibrary.createAssetAsync(uri);
-      console.log("Asset: ", asset);
       // const album = await MediaLibrary.getAlbumAsync("Music");
       // if (album === null) {
       //   await MediaLibrary.createAlbumAsync("Music", asset, true);
@@ -67,7 +64,6 @@ const DownloadButton = ({ id, image, title, artist, url, duration }: Props) => {
       //   await MediaLibrary.addAssetsToAlbumAsync([asset], album, true);
       // }
 
-      console.log(`File moved to public Music folder`);
 
       setIsDownloading(false);
       setDownloadProgress(0);

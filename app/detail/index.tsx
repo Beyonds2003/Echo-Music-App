@@ -8,7 +8,7 @@ import {
 import React from "react";
 import { FontAwesome6, MaterialIcons } from "@expo/vector-icons";
 import { useMusicPlayerStore } from "@/constants/musicPlayerStore";
-import { handleMusicPause, handleMusicPlay, sound } from "@/lib/utils";
+import { handleMusicPause, handleMusicPlay } from "@/lib/utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -81,7 +81,7 @@ const Detail = () => {
                           artist,
                           url,
                           duration,
-                          musicPlayerStore.set,
+                          musicPlayerStore.set
                         )
                       }
                     >
@@ -97,7 +97,7 @@ const Detail = () => {
                           artist,
                           url,
                           duration,
-                          musicPlayerStore.set,
+                          musicPlayerStore.set
                         )
                       }
                     >

@@ -1,6 +1,6 @@
 <div align="center">
   <h1>
-    Echo music app
+    Echo Music App
   </h1>
   <br />
     <img src="./assets/images/cover.png" alt="Project Homepage">
